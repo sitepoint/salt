@@ -1641,7 +1641,11 @@ class State(object):
         before processing.
         '''
         start_time = datetime.datetime.now()
-        log.info('Running state [{0}] at time {1}'.format(low['name'], start_time.time().isoformat()))
+        log.info('Running state [{0}] at time {1}'.format(
+            low['name'].strip() if isinstance(low['name'], str)
+                else low['name'],
+            start_time.time().isoformat())
+        )
         errors = self.verify_data(low)
         if errors:
             ret = {
@@ -1662,10 +1666,13 @@ class State(object):
 
         if not low.get('__prereq__'):
             log.info(
-                    'Executing state {0[state]}.{0[fun]} for {0[name]}'.format(
-                        low
-                        )
-                    )
+                'Executing state {0}.{1} for [{2}]'.format(
+                    low['state'],
+                    low['fun'],
+                    low['name'].strip() if isinstance(low['name'], str)
+                        else low['name']
+                )
+            )
 
         if 'provider' in low:
             self.load_modules(low)
@@ -1782,7 +1789,14 @@ class State(object):
         duration = (delta.seconds * 1000000 + delta.microseconds)/1000.0
         ret['duration'] = duration
         ret['__id__'] = low['__id__']
-        log.info('Completed state [{0}] at time {1} duration_in_ms={2}'.format(low['name'], finish_time.time().isoformat(), duration))
+        log.info(
+            'Completed state [{0}] at time {1} duration_in_ms={2}'.format(
+                low['name'].strip() if isinstance(low['name'], str)
+                    else low['name'],
+                finish_time.time().isoformat(),
+                duration
+            )
+        )
         return ret
 
     def call_chunks(self, chunks):
